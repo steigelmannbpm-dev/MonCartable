@@ -1,1 +1,40 @@
+name: Build APK Mon Cartable
 
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Recuperer le code
+      uses: actions/checkout@v3
+
+    - name: Installer Python 3.10
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Installer les dependances systeme
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y -qq \
+          build-essential git libssl-dev libffi-dev \
+          zlib1g-dev libbz2-dev liblzma-dev \
+          libreadline-dev libsqlite3-dev \
+          libltdl-dev unzip zip openjdk-17-jdk \
+          autoconf libtool cmake
+        pip install -q cython==0.29.37 buildozer
+
+    - name: Construire l APK
+      run: buildozer android debug
+
+    - name: Telecharger l APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: MonCartable-APK
+        path: bin/*.apk
+        if-no-files-found: error
